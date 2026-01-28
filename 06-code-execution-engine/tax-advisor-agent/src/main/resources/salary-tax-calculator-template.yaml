@@ -1,0 +1,18 @@
+- route:
+    from:
+      uri: direct
+      parameters:
+        name: start
+      steps:
+        - log:
+            message: "Incoming request for tax calculation: ${body}"
+        - setBody:
+            simple: "{{salary}}"
+        - to:
+            uri: "kamelet:salary-tax-calculator-sink"
+            parameters:
+              country: "{{countryCode}}"
+              amount: "${body}"
+        - log:
+            id: log-result
+            message: "Tax Calculation Result: ${body}"

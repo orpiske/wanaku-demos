@@ -1,0 +1,39 @@
+apiVersion: camel.apache.org/v1
+kind: Kamelet
+metadata:
+  name: salary-tax-calculator-sink
+  labels:
+    camel.apache.org/kamelet.type: "sink"
+spec:
+  definition:
+    title: "Salary Tax Calculator Sink"
+    description: "Calculates tax by sending country and amount to a REST API."
+    required:
+      - country
+    properties:
+      country:
+        title: "Country"
+        type: string
+        description: "The country code (e.g., US, UK)."
+      amount:
+        title: "Amount"
+        type: number
+        description: "The salary amount to calculate tax for."
+  template:
+    from:
+      uri: "kamelet:source"
+      steps:
+        # Construct the JSON body from properties or headers
+        - setBody:
+            simple: |
+              {
+                "country": "{{country}}",
+                "amount": {{amount}}
+              }
+        - setHeader:
+            name: "Content-Type"
+            constant: "application/json"
+        - setHeader:
+            name: "CamelHttpMethod"
+            constant: "POST"
+        - to: "http://localhost:8081/api/tax/salary/calculate"

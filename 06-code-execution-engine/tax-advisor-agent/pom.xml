@@ -19,6 +19,7 @@
 
     <quarkus.container-image.registry>quay.io</quarkus.container-image.registry>
     <quarkus.container-image.tag>latest</quarkus.container-image.tag>
+    <wanaku.version>0.1.0-SNAPSHOT</wanaku.version>
   </properties>
 
   <dependencyManagement>
@@ -37,11 +38,23 @@
         <type>pom</type>
         <scope>import</scope>
       </dependency>
+
+      <dependency>
+        <groupId>ai.wanaku.sdk</groupId>
+        <artifactId>capabilities-bom</artifactId>
+        <version>${wanaku.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 
   <dependencies>
     <!-- Quarkus REST (JAX-RS) -->
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-rest</artifactId>
+    </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-rest-jackson</artifactId>
@@ -65,10 +78,15 @@
       <artifactId>quarkus-jdbc-h2</artifactId>
     </dependency>
 
-    <!-- LangChain4j Ollama Integration -->
+<!--    &lt;!&ndash; LangChain4j Ollama Integration &ndash;&gt;-->
+<!--    <dependency>-->
+<!--      <groupId>io.quarkiverse.langchain4j</groupId>-->
+<!--      <artifactId>quarkus-langchain4j-ollama</artifactId>-->
+<!--    </dependency>-->
+
     <dependency>
       <groupId>io.quarkiverse.langchain4j</groupId>
-      <artifactId>quarkus-langchain4j-ollama</artifactId>
+      <artifactId>quarkus-langchain4j-openai</artifactId>
     </dependency>
 
     <!-- OpenAPI/Swagger -->
@@ -87,6 +105,11 @@
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-arc</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>ai.wanaku.sdk</groupId>
+      <artifactId>langchain4j-code-execution-engine-wanaku</artifactId>
     </dependency>
 
     <!-- Test Dependencies -->
