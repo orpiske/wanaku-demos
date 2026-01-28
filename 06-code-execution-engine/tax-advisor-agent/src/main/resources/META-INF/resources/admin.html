@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tax Rate Administration</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/flowbite@2.4.1/dist/flowbite.min.css" rel="stylesheet" />
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div x-data="adminApp()" x-init="loadRates()" class="container mx-auto px-4 py-8 max-w-6xl">
+        <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+            <!-- Header -->
+            <div class="bg-green-600 text-white px-6 py-4 flex justify-between items-center">
+                <h1 class="text-xl font-semibold">Tax Rate Administration</h1>
+                <a href="/" class="text-white hover:text-green-200 text-sm">Back to Chat</a>
+            </div>
+
+            <!-- Add New Rate Form -->
+            <div class="p-6 border-b">
+                <h2 class="text-lg font-medium mb-4">Add New Tax Rate</h2>
+                <form @submit.prevent="createRate" class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                    <select x-model="newRate.category" class="border border-gray-300 rounded-lg px-3 py-2" required>
+                        <option value="">Select Category</option>
+                        <option value="SALARY">Salary</option>
+                        <option value="STOCK_RECEIVED">Stock Received</option>
+                        <option value="STOCK_SOLD">Stock Sold</option>
+                        <option value="OTHER_INCOME">Other Income</option>
+                    </select>
+                    <input
+                        type="text"
+                        x-model="newRate.countryCode"
+                        placeholder="Country Code (e.g., CZ)"
+                        class="border border-gray-300 rounded-lg px-3 py-2"
+                        required
+                    >
+                    <input
+                        type="number"
+                        step="0.01"
+                        x-model="newRate.rate"
+                        placeholder="Rate (%)"
+                        class="border border-gray-300 rounded-lg px-3 py-2"
+                        required
+                    >
+                    <input
+                        type="text"
+                        x-model="newRate.description"
+                        placeholder="Description"
+                        class="border border-gray-300 rounded-lg px-3 py-2"
+                    >
+                    <button
+                        type="submit"
+                        class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
+                    >
+                        Add Rate
+                    </button>
+                </form>
+            </div>
+
+            <!-- Tax Rates Table -->
+            <div class="p-6">
+                <h2 class="text-lg font-medium mb-4">Current Tax Rates</h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-4 py-3 font-medium text-gray-600">ID</th>
+                                <th class="px-4 py-3 font-medium text-gray-600">Category</th>
+                                <th class="px-4 py-3 font-medium text-gray-600">Country</th>
+                                <th class="px-4 py-3 font-medium text-gray-600">Rate (%)</th>
+                                <th class="px-4 py-3 font-medium text-gray-600">Description</th>
+                                <th class="px-4 py-3 font-medium text-gray-600">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <template x-for="rate in rates" :key="rate.id">
+                                <tr class="border-t hover:bg-gray-50">
+                                    <template x-if="editingId !== rate.id">
+                                        <td class="px-4 py-3" x-text="rate.id"></td>
+                                    </template>
+                                    <template x-if="editingId !== rate.id">
+                                        <td class="px-4 py-3" x-text="rate.category"></td>
+                                    </template>
+                                    <template x-if="editingId !== rate.id">
+                                        <td class="px-4 py-3" x-text="rate.countryCode"></td>
+                                    </template>
+                                    <template x-if="editingId !== rate.id">
+                                        <td class="px-4 py-3" x-text="rate.rate"></td>
+                                    </template>
+                                    <template x-if="editingId !== rate.id">
+                                        <td class="px-4 py-3" x-text="rate.description"></td>
+                                    </template>
+                                    <template x-if="editingId !== rate.id">
+                                        <td class="px-4 py-3 space-x-2">
+                                            <button @click="startEdit(rate)" class="text-blue-600 hover:text-blue-800">Edit</button>
+                                            <button @click="deleteRate(rate.id)" class="text-red-600 hover:text-red-800">Delete</button>
+                                        </td>
+                                    </template>
+                                    <template x-if="editingId === rate.id">
+                                        <td class="px-4 py-3" x-text="rate.id"></td>
+                                    </template>
+                                    <template x-if="editingId === rate.id">
+                                        <td class="px-4 py-3">
+                                            <select x-model="editRate.category" class="border rounded px-2 py-1 w-full">
+                                                <option value="SALARY">Salary</option>
+                                                <option value="STOCK_RECEIVED">Stock Received</option>
+                                                <option value="STOCK_SOLD">Stock Sold</option>
+                                                <option value="OTHER_INCOME">Other Income</option>
+                                            </select>
+                                        </td>
+                                    </template>
+                                    <template x-if="editingId === rate.id">
+                                        <td class="px-4 py-3">
+                                            <input type="text" x-model="editRate.countryCode" class="border rounded px-2 py-1 w-full">
+                                        </td>
+                                    </template>
+                                    <template x-if="editingId === rate.id">
+                                        <td class="px-4 py-3">
+                                            <input type="number" step="0.01" x-model="editRate.rate" class="border rounded px-2 py-1 w-full">
+                                        </td>
+                                    </template>
+                                    <template x-if="editingId === rate.id">
+                                        <td class="px-4 py-3">
+                                            <input type="text" x-model="editRate.description" class="border rounded px-2 py-1 w-full">
+                                        </td>
+                                    </template>
+                                    <template x-if="editingId === rate.id">
+                                        <td class="px-4 py-3 space-x-2">
+                                            <button @click="saveEdit" class="text-green-600 hover:text-green-800">Save</button>
+                                            <button @click="cancelEdit" class="text-gray-600 hover:text-gray-800">Cancel</button>
+                                        </td>
+                                    </template>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- API Documentation Link -->
+        <div class="mt-6 text-center">
+            <a href="/q/swagger-ui" class="text-blue-600 hover:text-blue-800">View API Documentation (Swagger UI)</a>
+        </div>
+    </div>
+
+    <script src="js/admin.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flowbite@2.4.1/dist/flowbite.min.js"></script>
+</body>
+</html>
