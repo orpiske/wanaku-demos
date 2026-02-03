@@ -1,30 +1,29 @@
 package com.example.taxadvisor.ai;
 
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 
 import ai.wanaku.capabilities.cee.langchain4j.WanakuCodeExecutionEngine;
 import ai.wanaku.capabilities.sdk.api.exceptions.WanakuException;
 import ai.wanaku.capabilities.sdk.api.types.execution.CodeExecutionEvent;
 import ai.wanaku.capabilities.sdk.api.types.execution.CodeExecutionEventType;
-import ai.wanaku.capabilities.sdk.common.config.DefaultServiceConfig;
-import ai.wanaku.capabilities.sdk.common.config.ServiceConfig;
-import ai.wanaku.capabilities.sdk.common.serializer.JacksonSerializer;
-import ai.wanaku.capabilities.sdk.security.TokenEndpoint;
 import dev.langchain4j.agent.tool.Tool;
 import io.smallrye.common.annotation.Blocking;
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 import java.util.Optional;
-import org.eclipse.microprofile.config.ConfigProvider;
 import org.jboss.logging.Logger;
 
 @ApplicationScoped
 public class WanakuCodeTool {
     private static final Logger LOG = Logger.getLogger(WanakuCodeTool.class);
 
+    @Inject
+    WanakuCodeExecutionEngine engine;
+
     // Search tool
-    @Tool("Searches for services to perform tax calculations.")
+//    @Tool("Searches for services to perform tax calculations.")
     public String getTaxCalculationServices() {
         LOG.info("Searching for services to perform tax calculations");
         final URL resource = this.getClass().getResource("/salary-tax-calculator-sink.kamelet.yaml");
@@ -74,7 +73,7 @@ public class WanakuCodeTool {
     }
 
     // Construction
-    @Tool("Generates the tools orchestration code")
+//    @Tool("Generates the tools orchestration code")
     public String getEndpointCommunicationPrimitives(String invocationTable) {
         LOG.infof("Generating the orchestration code for service %s", invocationTable);
 
@@ -112,24 +111,6 @@ public class WanakuCodeTool {
     @Blocking
     public String consumeTheCorePrimitives(String corePrimitive) {
         LOG.infof("Requesting execution of Camel code %s", corePrimitive);
-
-        final String value = ConfigProvider.getConfig().getConfigValue("wanaku.client.secret").getValue();
-
-        final ServiceConfig serviceConfig = DefaultServiceConfig.Builder.newBuilder()
-                .baseUrl("http://localhost:8080")
-                .serializer(new JacksonSerializer())
-                .clientId("wanaku-service")
-                .tokenEndpoint(TokenEndpoint.autoResolve("http://localhost:8080", null))
-                .secret(value)
-                .build();
-
-
-        final WanakuCodeExecutionEngine engine = WanakuCodeExecutionEngine.builder()
-                .serviceConfig(serviceConfig)
-                .taskTimeout(90)
-                .engineType("camel")
-                .language("yaml")
-                .build();
 
         try {
             final String execute = engine.execute(corePrimitive);

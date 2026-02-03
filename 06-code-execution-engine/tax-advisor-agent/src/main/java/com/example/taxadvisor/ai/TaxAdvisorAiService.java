@@ -4,9 +4,11 @@ import dev.langchain4j.service.SystemMessage;
 import dev.langchain4j.service.UserMessage;
 import io.quarkiverse.langchain4j.RegisterAiService;
 import io.quarkiverse.langchain4j.ToolBox;
+import io.smallrye.common.annotation.Blocking;
 import io.smallrye.mutiny.Multi;
 
-@RegisterAiService
+@Blocking
+@RegisterAiService(toolProviderSupplier = WanakuToolsProvider.class)
 public interface TaxAdvisorAiService {
 
     @SystemMessage("""
